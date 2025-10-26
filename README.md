@@ -1,221 +1,140 @@
-# 🐝 Formation
+# Foundation
 
-![Let's get in formation](assets/formation.gif)
-> Formation is a shell script to set up a macOS laptop for design and development.
+> "Violence is the last refuge of the incompetent." - Salvor Hardin
 
-It can be run multiple times on the same machine safely. It installs, upgrades, or skips packages based on what is already installed on the machine.
+A lightweight, mathematically precise setup script for macOS focused on backend development. Like Hari Seldon's plan to preserve knowledge through the coming dark age, Foundation establishes the tools needed to build the future.
 
-## Install
+Designed to work efficiently on machines with limited storage (256GB+).
 
-Download the script:
+## What it installs
 
-```sh
-git clone git@github.com/minamarkham/formation.git && cd formation
+### Development Tools
+- **Git** - Version control
+- **GitHub CLI** - GitHub from the command line
+- **Node.js** - JavaScript runtime
+- **Python 3.12** - Latest Python
+- **Go** - Go programming language
+- **PostgreSQL 16** - Database
+- **Redis** - In-memory data store
+- **Docker** - Containerization
+
+### CLI Utilities
+- **ripgrep** - Fast grep alternative
+- **fd** - Fast find alternative
+- **bat** - Better cat with syntax highlighting
+- **eza** - Better ls with icons
+- **fzf** - Fuzzy finder
+- **jq** - JSON processor
+- **htop** - System monitor
+- **tmux** - Terminal multiplexer
+- **tree** - Directory viewer
+- **tlrc** - Simplified man pages (fast tldr client)
+
+### Applications
+- **iTerm2** - Better terminal
+- **Visual Studio Code** - Code editor
+- **Docker Desktop** - Docker GUI
+- **Rectangle** - Window management
+- **1Password** - Password manager
+- **Slack** - Communication
+- **Arc** - Modern browser
+- **Claude Code** - AI coding assistant
+
+### macOS Configuration
+- Dark mode enabled
+- Fast key repeat (2ms repeat, 15ms initial delay)
+- Traditional scroll direction (disable "natural" scrolling)
+- Show hidden files in Finder
+- Show path bar in Finder
+- Disable app quarantine dialogs
+
+## Quick Start (Brand New Mac)
+
+On a fresh Mac, run this one-liner:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/signalnine/foundation/main/bootstrap.sh | bash
 ```
 
-Review the script (please don't run scripts you don't understand):
+This installs Xcode Command Line Tools, clones the repo, and runs the full setup.
 
-```sh
-less slay
+**OR** see [BOOTSTRAP.md](BOOTSTRAP.md) for alternative installation methods.
+
+## Installation (If You Already Have Git)
+
+1. Clone this repository:
+```bash
+git clone https://github.com/signalnine/foundation.git
+cd foundation
 ```
 
-Slay:
-
-```sh
-sh slay 2>&1 | tee ~/slay.log
-```
-Just follow the prompts and you’ll be fine. 👌
-
-:warning: Warning: I advise against running [this script](slay) unless you understand what it’s doing to your computer.
-
-I created this based on my own preferences; your mileage may vary.
-
-Once the script is done, quit and relaunch Terminal.
-
-It is highly recommended to run the script regularly to keep your computer up to date.
-
-Your last Formation run will be saved to `~/slay.log`. To review it, run `less ~/slay.log`.
-
-That's it! :sparkles:
-
-## What it sets up
-The setup process will:
-
-<details>
-<summary>Basic tools:</summary>
-
-* [XCode Command Line Tools](https://developer.apple.com/xcode/downloads/) for developer essentials.
-* [Bash-it](https://github.com/Bash-it/bash-it/), for a more powerful bash.
-* [Git](https://git-scm.com/) for version control
-* [Homebrew](http://brew.sh/) for managing operating system libraries.
-</details>
-
-<details>
-<summary>Package Managers:</summary>
-
-* [NVM](https://github.com/creationix/nvm/) for managing and installing multiple versions of [Node.js](http://nodejs.org/) and [npm](https://www.npmjs.org/)
-* [Rbenv](https://github.com/sstephenson/rbenv) for managing versions of Ruby
-* [Yarn](https://yarnpkg.com/en/) for managing JavaScript packages
-</details>
-
-<details>
-<summary>CLI Tools & Utilities:</summary>
-
-* [asciinema](https://asciinema.org/) for recording terminal sessions
-* [Gulp](https://gulpjs.com/) the streaming build system
-* [Hotel](https://github.com/typicode/hotel), a simple process manager for developers
-* [Hub](http://hub.github.com/) for interacting with the GitHub API
-* [hugo](https://gohugo.io/), an open-source static site generator
-* [ImageMagick](http://www.imagemagick.org/) to create, edit, compose, or convert bitmap images
-* [mas](https://github.com/mas-cli/mas) Mac App Store command line interface
-* [Tig](https://github.com/jonas/tig) text-mode interface for git
-* [Vagrant](https://www.vagrantup.com/) for development environments
-</details>
-
-### Apps
-
-<details>
-<summary>Productivity</summary>
-
-* [Airmail](http://airmailapp.com/) for a better mail client.
-* [Alfred](https://www.alfredapp.com/) for increased productivity and efficiency with macOS.
-* [Fantastical](https://flexibits.com/fantastical) for a better calendar.
-* [Things](https://culturedcode.com/things/) for getting things done.
-</details>
-
-<details>
-<summary>Development</summary>
-
-* [Dash](https://kapeli.com/dash) offline access to API documentation sets
-* [ForkLift](https://www.binarynights.com/forklift/) FTP client
-* [Hyper](https://hyper.is/) for an alternative terminal.
-* [ImageOptim](https://imageoptim.com/mac) for image optimization.
-* [iTerm](https://www.iterm2.com/) for a better terminal.
-* [Kaleidoscope](https://www.kaleidoscopeapp.com/) for a better diff tool.
-* [Virtual Box](https://www.virtualbox.org/) powerful virtualization tool
-* [Visual Studio Code](https://code.visualstudio.com/) IDE
-</details>
-
-<details>
-<summary>Design</summary>
-
-* [Affinity Designer](https://affinity.serif.com/en-us/designer/)
-* [Affinity Photo](https://affinity.serif.com/en-us/photo/)
-* [Sip](http://sipapp.io/) collect, organize & share your colors
-* [Sketch](https://www.sketchapp.com/) for design.
-</details>
-
-<details>
-<summary>Communication</summary>
-
-* [Bear](http://www.bear-writer.com/) for writing and previewing markdown.
-* [Skype](https://www.skype.com/en/) for free calls to friends and family.
-* [Slack](https://slack.com/) where work happens.
-* [Ulysses](https://ulyssesapp.com/) for long-form writing.
-</details>
-
-<details>
-<summary>Utilities</summary>
-
-* [1Password](https://1password.com/) for password management.
-* [Dropbox](https://www.dropbox.com) for cloud file storage.
-* [Divvy](http://mizage.com/divvy/) for better window management.
-* [Dr Cleaner Pro Plus](https://www.drcleaner.com/)
-* [Encrypto](https://macpaw.com/encrypto) for securing files.
-* [ExpressVPN](https://www.expressvpn.com/) for privacy.
-* [HyperDock](https://bahoom.com/hyperdock/)
-* [Karabiner](https://pqrs.org/osx/karabiner/) for keyboard mapping.
-* [Renamer](https://renamer.com/) for easy file renaming.
-</details>
-
-<details>
-<summary>Miscellaneous</summary>
-
-* [Gifox](https://gifox.io/) for GIF making.
-* [Rocket](http://matthewpalmer.net/rocket/) for Slack-like emojis.
-* [Spotify](https://www.spotify.com/) for music.
-* [VLC](http://www.videolan.org/) for a better media player.
-</details>
-
-<details>
-<summary>Browsers</summary>
-
-* [Blisk](https://blisk.io/) for cross-device web development.
-* [Brave](https://brave.com/) for web browsing without ads.
-* [Chrome](https://www.google.com/chrome/browser/desktop/) for fast and free web browsing.
-* [Firefox](https://www.mozilla.org/en-US/firefox/new/) for web browsing and testing.
-* [TorBrowser](https://www.torproject.org/projects/torbrowser.html.en) for super secret web browsing.
-</details>
-
-<sub>See [`.swag`](.swag) for the full list of apps that will be installed. Adjust it to your personal taste.</sub>
-
-It should take less than 20 minutes to install (depends on your machine).
-
-## 🌶 Just add `~/.hot-sauce`
-
-![I got hot sauce in my bag](assets/hot-sauce.gif)
-
-Your `~/.hot-sauce` is added at the end of the Formation script. Put your customizations there.
-For example:
-
-```sh
-#!/usr/bin/env bash
-
-SETUP_ROOT=$HOME/.setup
-
-NERDFONTS_RELEASE=$(curl -L -s -H 'Accept: application/json' https://github.com/ryanoasis/nerd-fonts/releases/latest)
-NERDFONTS_VERSION=$(get_github_version $NERDFONTS_RELEASE)
-
-DIRECTORIES=(
-    $HOME/Desktop/code
-    $HOME/Desktop/design
-    $HOME/Desktop/*dump
-    $HOME/Desktop/GIFs
-    $HOME/Desktop/projects
-    $HOME/Desktop/screenshots
-)
-
-NERDFONTS=(
-    SpaceMono
-    Hack
-    AnonymousPro
-    Inconsolata
-)
-
-step "Making directories…"
-for dir in ${DIRECTORIES[@]}; do
-    mkd $dir
-done
-
-step "Installing fonts…"
-for font in ${NERDFONTS[@]}; do
-    if [ ! -d ~/Library/Fonts/$font ]; then
-        printf "${indent}  [↓] $font "
-        wget -P ~/Library/Fonts https://github.com/ryanoasis/nerd-fonts/releases/download/$NERDFONTS_VERSION/$font.zip --quiet;unzip -q ~/Library/Fonts/$font -d ~/Library/Fonts/$font
-        print_in_green "${bold}✓ done!${normal}\n"
-    else
-        print_muted "${indent}✓ $font already installed. Skipped."
-    fi
-done
+2. Review the script:
+```bash
+cat setup.sh
 ```
 
-Write your customizations such that they can be run safely more than once.
-See the `slay` script for examples.
+3. Run the setup:
+```bash
+chmod +x setup.sh
+./setup.sh
+```
 
-Formation functions such as `step` and `link` can be used in your `~/.hot-sauce`.
+The script will guide you through:
+1. System Prerequisites
+2. Package Manager (Homebrew)
+3. Development Tools
+4. Applications
+5. SSH Configuration
+6. Git Configuration
+7. macOS Settings
+8. Claude Code
 
-## Known Issues
-Cask does not recognize applications installed outside of Homebrew Cask – in the case that the script fails, you can either remove the application from the install list or uninstall the application causing the failure and try again.
+Should take approximately 15 minutes. All output is logged to `~/foundation.log` for reference.
 
-## Acknowledgements
+## Customization
 
-Inspiration and code was taken from many sources, including:
+Edit `setup.sh` to customize the packages and applications installed. The main arrays to modify are:
 
-* [Mathias Bynens'](https://github.com/mathiasbynens) [dotfiles](https://github.com/mathiasbynens/dotfiles)
-* thoughtbot's [laptop](https://github.com/thoughtbot/laptop/)
+- `packages` - Homebrew formulae (line ~60)
+- `apps` - Homebrew casks (line ~105)
 
-## 📜  License
+## SSH Keys
 
-Formation is customized for my own needs. It is free software, and may be redistributed under the terms specified in the [LICENSE] file.
+The script can either:
+1. Use existing SSH keys if found
+2. Generate new ED25519 SSH keys
 
-[LICENSE]: LICENSE
+To import your existing SSH keys from GitHub:
+```bash
+curl https://github.com/signalnine.keys >> ~/.ssh/authorized_keys
+```
+
+## Storage Considerations
+
+This setup is designed to be lightweight (~10-15GB including applications). For a 256GB Mac:
+- Base install: ~5GB
+- Applications: ~5-10GB
+- Docker images: varies (use `docker system prune` regularly)
+
+## Post-Installation
+
+After running the setup:
+
+1. Restart your terminal to ensure all PATH changes take effect
+2. Configure iTerm2 preferences (colors, fonts, etc.)
+3. Setup VS Code settings sync if desired
+4. Login to applications (1Password, Slack, etc.)
+5. Import GitHub SSH keys if needed
+
+## Maintenance
+
+Re-run the script anytime to update packages:
+```bash
+./setup.sh
+```
+
+The script is idempotent - it safely skips already installed items.
+
+## License
+
+MIT
