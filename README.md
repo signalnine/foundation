@@ -1,6 +1,6 @@
 # Foundation
 
-> "Violence is the last refuge of the incompetent." - Salvor Hardin
+> "To succeed, planning alone is insufficient. One must improvise as well." - Hari Seldon
 
 A lightweight, mathematically precise setup script for macOS focused on backend development. Like Hari Seldon's plan to preserve knowledge through the coming dark age, Foundation establishes the tools needed to build the future.
 
