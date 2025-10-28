@@ -43,10 +43,12 @@ Designed to work efficiently on machines with limited storage (256GB+).
 ### macOS Configuration
 - Dark mode enabled
 - Fast key repeat (2ms repeat, 15ms initial delay)
-- Traditional scroll direction (disable "natural" scrolling)
+- Traditional scroll direction (disable "natural" scrolling) - *requires logout*
 - Show hidden files in Finder
 - Show path bar in Finder
 - Disable app quarantine dialogs
+
+**Note**: Some settings (especially scroll direction) require logging out and back in to take effect.
 
 ## Quick Start (Brand New Mac)
 

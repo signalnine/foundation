@@ -195,8 +195,9 @@ configure_macos() {
     print_success "Fast key repeat configured"
 
     # Reverse scroll direction (disable "natural" scrolling)
-    defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
-    print_success "Traditional scroll direction enabled"
+    # Note: Requires logout/login to take effect
+    defaults write -g com.apple.swipescrolldirection -bool false
+    print_success "Traditional scroll direction enabled (requires logout)"
 
     # Show hidden files in Finder
     defaults write com.apple.finder AppleShowAllFiles -bool true
@@ -303,6 +304,7 @@ ${BOLD}╔═══════════════════════�
 
 "
     print_info "Restart your terminal for all changes to take effect."
+    print_warning "Log out and back in for scroll direction changes to apply."
     print_info "Log saved to: $HOME/foundation.log"
     printf "\n"
 }
