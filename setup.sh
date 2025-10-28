@@ -418,9 +418,8 @@ main() {
     print_info "Log saved to: $HOME/foundation.log"
 
     printf "\n${DIM}${CYAN}"
-    printf "  \"The Encyclopedia Foundation has been established to preserve\n"
-    printf "   all human knowledge through the coming dark age.\"\n"
-    printf "                                        - Hari Seldon\n"
+    printf "  \"Never let your sense of morals prevent you from doing what is right.\"\n"
+    printf "                                        - Salvor Hardin\n"
     printf "${NC}\n"
 }
 
