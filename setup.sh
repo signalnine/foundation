@@ -8,6 +8,13 @@
 
 set -e
 
+# Check if output is to a terminal
+if [ -t 1 ]; then
+    INTERACTIVE=true
+else
+    INTERACTIVE=false
+fi
+
 # Colors and formatting
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -173,7 +180,7 @@ install_brew_packages() {
         jq              # JSON processor
         htop            # System monitor
         tree            # Directory viewer
-        tlrc            # Simplified man pages (tldr client)
+        tldr            # Simplified man pages (tldr client)
         ripgrep         # Fast grep alternative
         fd              # Fast find alternative
         bat             # Better cat
@@ -202,8 +209,11 @@ install_brew_packages() {
             printf "  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s ${DIM}(already installed)${NC}\n" "$current" "$total" "$package"
         else
             printf "  ${DIM}[%2d/%d]${NC} ${YELLOW}↻${NC} Installing %s..." "$current" "$total" "$package"
-            brew install "$package" >/dev/null 2>&1
-            printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$package"
+            if brew install "$package" >/dev/null 2>&1; then
+                printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$package"
+            else
+                printf "\r  ${DIM}[%2d/%d]${NC} ${RED}✗${NC} %s ${RED}(failed)${NC}              \n" "$current" "$total" "$package"
+            fi
         fi
 
         progress_bar "$current" "$total"
@@ -236,8 +246,11 @@ install_applications() {
             printf "  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s ${DIM}(already installed)${NC}\n" "$current" "$total" "$app"
         else
             printf "  ${DIM}[%2d/%d]${NC} ${YELLOW}↻${NC} Installing %s..." "$current" "$total" "$app"
-            brew install --cask "$app" >/dev/null 2>&1
-            printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$app"
+            if brew install --cask "$app" >/dev/null 2>&1; then
+                printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$app"
+            else
+                printf "\r  ${DIM}[%2d/%d]${NC} ${RED}✗${NC} %s ${RED}(failed)${NC}              \n" "$current" "$total" "$app"
+            fi
         fi
 
         progress_bar "$current" "$total"
@@ -352,7 +365,8 @@ setup_git() {
 
 # Main installation flow
 main() {
-    clear
+    # Clear screen (works better with tee than 'clear' command)
+    printf '\033[2J\033[H'
 
     # Animated title screen
     printf "${CYAN}"
@@ -415,7 +429,6 @@ main() {
 
     print_info "Restart your terminal for all changes to take effect."
     print_warning "Log out and back in for scroll direction changes to apply."
-    print_info "Log saved to: $HOME/foundation.log"
 
     printf "\n${DIM}${CYAN}"
     printf "  \"Never let your sense of morals prevent you from doing what is right.\"\n"
@@ -423,5 +436,7 @@ main() {
     printf "${NC}\n"
 }
 
-# Run main function and log output
-main 2>&1 | tee "$HOME/foundation.log"
+# Run main function
+# Note: Logging is handled by redirection if needed
+# To log output: ./setup.sh 2>&1 | tee foundation.log
+main
