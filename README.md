@@ -28,7 +28,7 @@ Designed to work efficiently on machines with limited storage (256GB+).
 - **htop** - System monitor
 - **tmux** - Terminal multiplexer
 - **tree** - Directory viewer
-- **tlrc** - Simplified man pages (fast tldr client)
+- **tldr** - Simplified man pages
 
 ### Applications
 - **iTerm2** - Better terminal
