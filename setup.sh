@@ -8,6 +8,19 @@
 
 set -e
 
+# Error tracking
+FAILED_PACKAGES=()
+FAILED_APPS=()
+WARNINGS=()
+ERRORS=()
+
+# Check if output is to a terminal
+if [ -t 1 ]; then
+    INTERACTIVE=true
+else
+    INTERACTIVE=false
+fi
+
 # Colors and formatting
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -54,10 +67,61 @@ print_quote() {
     printf "${DIM}${CYAN}  \"%s\"${NC}\n" "$(get_quote)"
 }
 
+add_warning() {
+    WARNINGS+=("$1")
+}
+
+add_error() {
+    ERRORS+=("$1")
+}
+
 section() {
     printf "\n${BOLD}%s. %s${NC}\n" "$1" "$2"
     printf '%.0s─' {1..60}
     printf "\n"
+}
+
+# Retry logic for network operations
+retry_command() {
+    local max_attempts=$1
+    shift
+    local cmd="$@"
+    local attempt=1
+    local delay=2
+
+    while [ $attempt -le $max_attempts ]; do
+        if eval "$cmd"; then
+            return 0
+        else
+            if [ $attempt -lt $max_attempts ]; then
+                printf "${YELLOW}  Retry %d/%d after %ds...${NC}\n" "$attempt" "$max_attempts" "$delay"
+                sleep $delay
+                delay=$((delay * 2))
+            fi
+            attempt=$((attempt + 1))
+        fi
+    done
+
+    return 1
+}
+
+# Check if running on macOS
+check_macos() {
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        print_error "This script is designed for macOS only"
+        add_error "Not running on macOS (detected: $OSTYPE)"
+        exit 1
+    fi
+}
+
+# Check internet connectivity
+check_internet() {
+    if ! ping -c 1 -t 1 8.8.8.8 &>/dev/null && ! ping -c 1 -t 1 1.1.1.1 &>/dev/null; then
+        print_warning "No internet connection detected"
+        add_warning "Internet connection may be unavailable"
+        return 1
+    fi
+    return 0
 }
 
 # Spinner animation for long-running tasks
@@ -173,7 +237,7 @@ install_brew_packages() {
         jq              # JSON processor
         htop            # System monitor
         tree            # Directory viewer
-        tlrc            # Simplified man pages (tldr client)
+        tldr            # Simplified man pages (tldr client)
         ripgrep         # Fast grep alternative
         fd              # Fast find alternative
         bat             # Better cat
@@ -198,12 +262,24 @@ install_brew_packages() {
         current=$((current + 1))
         local package_name="${package%%@*}"
 
-        if brew list --formula | grep -q "^${package_name}$"; then
+        if brew list --formula | grep -q "^${package_name}$" 2>/dev/null; then
             printf "  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s ${DIM}(already installed)${NC}\n" "$current" "$total" "$package"
         else
             printf "  ${DIM}[%2d/%d]${NC} ${YELLOW}↻${NC} Installing %s..." "$current" "$total" "$package"
-            brew install "$package" >/dev/null 2>&1
-            printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$package"
+
+            # Try installing with retry logic
+            local error_log=$(mktemp)
+            if retry_command 3 "brew install $package >/dev/null 2>$error_log"; then
+                printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$package"
+            else
+                printf "\r  ${DIM}[%2d/%d]${NC} ${RED}✗${NC} %s ${RED}(failed)${NC}              \n" "$current" "$total" "$package"
+                FAILED_PACKAGES+=("$package")
+
+                # Capture error details
+                local error_detail=$(tail -3 "$error_log" 2>/dev/null | tr '\n' ' ' | cut -c1-100)
+                add_error "Failed to install $package: $error_detail"
+            fi
+            rm -f "$error_log"
         fi
 
         progress_bar "$current" "$total"
@@ -232,12 +308,24 @@ install_applications() {
     for app in "${apps[@]}"; do
         current=$((current + 1))
 
-        if brew list --cask | grep -q "^${app}$"; then
+        if brew list --cask | grep -q "^${app}$" 2>/dev/null; then
             printf "  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s ${DIM}(already installed)${NC}\n" "$current" "$total" "$app"
         else
             printf "  ${DIM}[%2d/%d]${NC} ${YELLOW}↻${NC} Installing %s..." "$current" "$total" "$app"
-            brew install --cask "$app" >/dev/null 2>&1
-            printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$app"
+
+            # Try installing with retry logic
+            local error_log=$(mktemp)
+            if retry_command 3 "brew install --cask $app >/dev/null 2>$error_log"; then
+                printf "\r  ${DIM}[%2d/%d]${NC} ${GREEN}✓${NC} %s installed              \n" "$current" "$total" "$app"
+            else
+                printf "\r  ${DIM}[%2d/%d]${NC} ${RED}✗${NC} %s ${RED}(failed)${NC}              \n" "$current" "$total" "$app"
+                FAILED_APPS+=("$app")
+
+                # Capture error details
+                local error_detail=$(tail -3 "$error_log" 2>/dev/null | tr '\n' ' ' | cut -c1-100)
+                add_error "Failed to install $app: $error_detail"
+            fi
+            rm -f "$error_log"
         fi
 
         progress_bar "$current" "$total"
@@ -327,8 +415,59 @@ install_claude_code() {
             print_success "Claude Code installed"
         else
             print_warning "npm not found, skipping Claude Code installation"
+            add_warning "Claude Code skipped: npm not available (install Node.js first)"
             print_info "Install Node.js first, then run: npm install -g @anthropic-ai/claude-code"
         fi
+    fi
+}
+
+# Print summary of errors and warnings
+print_summary() {
+    local has_issues=false
+
+    if [ ${#FAILED_PACKAGES[@]} -gt 0 ] || [ ${#FAILED_APPS[@]} -gt 0 ] || [ ${#WARNINGS[@]} -gt 0 ]; then
+        has_issues=true
+        printf "\n${BOLD}${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+        printf "${BOLD}${YELLOW}  Setup Summary${NC}\n"
+        printf "${BOLD}${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n\n"
+    fi
+
+    if [ ${#FAILED_PACKAGES[@]} -gt 0 ]; then
+        printf "${RED}${BOLD}Failed Packages (%d):${NC}\n" "${#FAILED_PACKAGES[@]}"
+        for pkg in "${FAILED_PACKAGES[@]}"; do
+            printf "  ${RED}✗${NC} %s\n" "$pkg"
+        done
+        printf "\n${DIM}To retry failed packages manually:${NC}\n"
+        printf "${DIM}  brew install %s${NC}\n\n" "${FAILED_PACKAGES[*]}"
+    fi
+
+    if [ ${#FAILED_APPS[@]} -gt 0 ]; then
+        printf "${RED}${BOLD}Failed Applications (%d):${NC}\n" "${#FAILED_APPS[@]}"
+        for app in "${FAILED_APPS[@]}"; do
+            printf "  ${RED}✗${NC} %s\n" "$app"
+        done
+        printf "\n${DIM}To retry failed apps manually:${NC}\n"
+        printf "${DIM}  brew install --cask %s${NC}\n\n" "${FAILED_APPS[*]}"
+    fi
+
+    if [ ${#WARNINGS[@]} -gt 0 ]; then
+        printf "${YELLOW}${BOLD}Warnings (%d):${NC}\n" "${#WARNINGS[@]}"
+        for warning in "${WARNINGS[@]}"; do
+            printf "  ${YELLOW}!${NC} %s\n" "$warning"
+        done
+        printf "\n"
+    fi
+
+    if [ ${#ERRORS[@]} -gt 0 ]; then
+        printf "${RED}${BOLD}Detailed Errors:${NC}\n"
+        for error in "${ERRORS[@]}"; do
+            printf "  ${RED}→${NC} ${DIM}%s${NC}\n" "$error"
+        done
+        printf "\n"
+    fi
+
+    if $has_issues; then
+        printf "${BOLD}${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n\n"
     fi
 }
 
@@ -352,7 +491,8 @@ setup_git() {
 
 # Main installation flow
 main() {
-    clear
+    # Clear screen (works better with tee than 'clear' command)
+    printf '\033[2J\033[H'
 
     # Animated title screen
     printf "${CYAN}"
@@ -370,6 +510,14 @@ main() {
     printf "\n"
 
     sleep 1
+
+    # Pre-flight checks
+    printf "${DIM}Running pre-flight checks...${NC}\n"
+    check_macos
+    if check_internet; then
+        printf "${GREEN}✓${NC} ${DIM}Internet connection verified${NC}\n"
+    fi
+    printf "\n"
 
     section "1" "System Prerequisites"
     ask_for_sudo
@@ -401,6 +549,9 @@ main() {
     section "8" "Claude Code"
     install_claude_code
 
+    # Print summary of any issues
+    print_summary
+
     # Final celebration
     printf "\n\n"
     printf "${GREEN}"
@@ -415,7 +566,6 @@ main() {
 
     print_info "Restart your terminal for all changes to take effect."
     print_warning "Log out and back in for scroll direction changes to apply."
-    print_info "Log saved to: $HOME/foundation.log"
 
     printf "\n${DIM}${CYAN}"
     printf "  \"Never let your sense of morals prevent you from doing what is right.\"\n"
@@ -423,5 +573,7 @@ main() {
     printf "${NC}\n"
 }
 
-# Run main function and log output
-main 2>&1 | tee "$HOME/foundation.log"
+# Run main function
+# Note: Logging is handled by redirection if needed
+# To log output: ./setup.sh 2>&1 | tee foundation.log
+main
